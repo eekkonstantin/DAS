@@ -1,4 +1,8 @@
+import java.util.*;
+
 public class Player {
+  private Scanner scanner = new Scanner(System.in);
+
   /**
    * Amount of cash available for use to the player.
    */
@@ -23,12 +27,25 @@ public class Player {
     return "Player " + id + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth();
   }
 
+  @Override
+  public boolean equals(Object other) {
+    return this.id == ((Player) other).getID();
+  }
+
   /**
    * Calculates the total net worth of the player: Cash on hand + worth of shares
    * @return Net worth of player.
    */
-  private double getWorth() {
+  public double getWorth() {
     return Double.valueOf(Watcher.df.format(this.cash + (this.shares * Stock.PRICE)));
+  }
+
+  public int getShares() {
+    return shares;
+  }
+
+  public int getID() {
+    return id;
   }
 
   /**
@@ -70,5 +87,46 @@ public class Player {
     }
     this.cash = Double.valueOf(Watcher.df.format(cash));
     System.out.println(sold + " shares sold.");
+  }
+
+  /**
+   * Allows the player to leave the game, returning all shares back to the stock.
+   */
+  public void quit() {
+    Stock.returned(shares);
+    System.out.println(
+      "Player " + id + " has left the game. " +
+      shares + " shares have been returned to the stock."
+    );
+  }
+
+  /**
+   * Get input from the player.
+   */
+  public void getInput() {
+    // get input
+    String out = "";
+    while (!Game.testInput(out)) {
+      instructions();
+      System.out.print("Command: ");
+      out = scanner.nextLine();
+    }
+
+    // get action and number
+    String[] input = out.toLowerCase().split(" ");
+    switch (COMMANDS.indexOf(input[0])) {
+      case 0: // buy
+        current.buy(Integer.parseInt(input[1]));
+        break;
+      case 1: // sell
+        current.sell(Integer.parseInt(input[1]));
+        break;
+      case 2: // pass
+        break;
+      case 3: // quit
+        current.quit();
+        Game.removePlayer(this);
+        break;
+    }
   }
 }
