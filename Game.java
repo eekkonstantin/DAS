@@ -4,6 +4,13 @@ public class Game {
   public static final double STARTCASH = 100.0;
 
   public static void main(String[] args) {
+    if (args.length != 1) {
+      System.err.println("Usage: java Game [No. of Players]");
+      System.exit(0);
+    }
+
+    instructions();
+
 
     Scanner scanner = new Scanner(System.in);
     Stock stock = new Stock();
@@ -23,8 +30,10 @@ public class Game {
       System.out.println(current);
       // get input
       String out = "";
-      while (!testInput(out))
+      while (!testInput(out)) {
+        instructions();
         out = scanner.nextLine();
+      }
 
       // get action and number
       String[] input = out.split(" ");
@@ -33,7 +42,7 @@ public class Game {
       else
         current.sell(Integer.parseInt(input[1]));
 
-      System.out.println(current);
+      System.out.println(current + "\n");
 
       // modify the stock price
       watcher.change(Watcher.type());
@@ -63,7 +72,10 @@ public class Game {
     return (ok == 2);
   }
 
-
+  public static void instructions() {
+    System.out.println("[ buy | sell ] [No. of shares]");
+    System.out.println("Choose whether to buy or sell shares.");
+  }
 
 
 }

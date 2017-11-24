@@ -20,7 +20,7 @@ public class Player {
 
   @Override
   public String toString() {
-    return "Player " + id + ": " + shares + " shares - Net Worth: " + getWorth();
+    return "Player " + id + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth();
   }
 
   /**
@@ -28,7 +28,7 @@ public class Player {
    * @return Net worth of player.
    */
   private double getWorth() {
-    return (this.cash + (this.shares * Stock.PRICE));
+    return Double.valueOf(Watcher.df.format(this.cash + (this.shares * Stock.PRICE)));
   }
 
   /**
@@ -48,6 +48,7 @@ public class Player {
       bought++;
       buy--;
     }
+    this.cash = Double.valueOf(Watcher.df.format(cash));
     System.out.println(bought + " shares bought.");
   }
 
@@ -67,7 +68,7 @@ public class Player {
       Stock.returned();
       sold++;
     }
-
+    this.cash = Double.valueOf(Watcher.df.format(cash));
     System.out.println(sold + " shares sold.");
   }
 }

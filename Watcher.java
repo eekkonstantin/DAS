@@ -4,10 +4,10 @@ import java.text.DecimalFormat;
 public class Watcher {
   public static final int MAJOR = 0;
   public static final int MINOR = 1;
+  public static DecimalFormat df = new DecimalFormat("#.##");
 
   private Stock stock;
   private static Random rand = new Random();
-  DecimalFormat df = new DecimalFormat("#.##");
 
   private HashMap<String, Double> badEvt = new HashMap<>();
   private HashMap<String, Double> goodEvt = new HashMap<>();
@@ -44,7 +44,7 @@ public class Watcher {
    * @return Random MAJOR/MINOR
    */
   public static int type() {
-    return 2 * rand.nextInt();
+    return rand.nextInt(2);
   }
 
 
@@ -59,25 +59,31 @@ public class Watcher {
   public void change(int type) {
     double max = 0.1;
     double min = 0.01;
+    double inc = 0.0;
 
     boolean good = goUp();
 
-    if (type == MAJOR) {
-      int rkey = (good ? goodEvt.size() : badEvt.size()) * rand.nextInt();
-      String key = ((String[]) (good ? goodEvt : badEvt).keySet().toArray())[rkey];
+    switch (type) {
+      case MAJOR:
+        int rkey = rand.nextInt(good ? goodEvt.size() : badEvt.size());
+        List<String> array = new ArrayList<>((good ? goodEvt : badEvt).keySet());
+        String key = array.get(rkey);
 
-      System.out.println(key);
-      double inc = (good ? goodEvt.get(key) : badEvt.get(key)) * Stock.PRICE;
-      stock.changePrice(inc);
-
-    } else { // MINOR - random percentage
-      double percentage = min + (max - min) * rand.nextDouble();
-      double inc = percentage * Stock.PRICE;
-      if (!good)
-        inc *= -1;
-      inc = Double.valueOf(df.format(inc));
-      stock.changePrice(inc);
+        System.out.println("BREAKING NEWS! " + key);
+        inc = (good ? goodEvt.get(key) : badEvt.get(key)) * Stock.PRICE;
+        break;
+      case MINOR: // random percentage
+        double percentage = min + (max - min) * rand.nextDouble();
+        inc = percentage * Stock.PRICE;
+        break;
+      default:
+        System.exit(0);
     }
+
+    if (!good)
+      inc *= -1;
+    inc = Double.valueOf(df.format(inc));
+    stock.changePrice(inc);
 
   }
 

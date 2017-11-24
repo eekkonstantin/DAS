@@ -34,7 +34,8 @@ public class Stock {
     if (PRICE < MIN)
       PRICE = MIN;
 
-    System.out.println("Share price " + (change < 0 ? "dropped by " + (change * -1) : "increased by " + change) + ".");
+    PRICE = Double.valueOf(Watcher.df.format(PRICE));
+    System.out.println("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
   }
 
   /**
