@@ -4,6 +4,7 @@ import java.text.DecimalFormat;
 public class Watcher {
   public static final int MAJOR = 0;
   public static final int MINOR = 1;
+
   private Stock stock;
   private static Random rand = new Random();
   DecimalFormat df = new DecimalFormat("#.##");
@@ -47,7 +48,14 @@ public class Watcher {
   }
 
 
-
+  /**
+   * Changes the stock price by a certain percentage. For {@code MINOR} changes,
+   * the share price is increased or decreased by a random percentage between 1%
+   * & 10%.
+   * For {@code MAJOR} changes, a random event is chosen from good or bad events
+   * and the share price is modified by a percentage tagged to the event.
+   * @param int type  Static int - MAJOR or MINOR.
+   */
   public void change(int type) {
     double max = 0.1;
     double min = 0.01;
@@ -73,6 +81,10 @@ public class Watcher {
 
   }
 
+  /**
+   * Determines whether the stock price should go up or down.
+   * @return Whether to go up or not.
+   */
   private boolean goUp() {
     return rand.nextBoolean();
   }

@@ -11,6 +11,7 @@ public class Player {
 
   private int id;
 
+
   public Player(int id, double cash) {
     this.id = id;
     this.cash = cash;
@@ -22,10 +23,20 @@ public class Player {
     return "Player " + id + ": " + shares + " shares - Net Worth: " + getWorth();
   }
 
+  /**
+   * Calculates the total net worth of the player: Cash on hand + worth of shares
+   * @return Net worth of player.
+   */
   private double getWorth() {
     return (this.cash + (this.shares * Stock.PRICE));
   }
 
+  /**
+   * Allows the player to buy shares. If the player does not have enough cash,
+   * the player can only buy as many as he can afford. If there are not enough
+   * shares for sale, the player receives all the shares available
+   * @param int buy   Number of shares the player wishes to buy
+   */
   public void buy(int buy) {
     int bought = 0;
     while (buy > 0) {
@@ -40,6 +51,11 @@ public class Player {
     System.out.println(bought + " shares bought.");
   }
 
+  /**
+   * Allows the player to sell their shares. If the player does not have enough
+   * shares to sell, all remaining shares will be sold.
+   * @param int sell   Number of shares the player wishes to sell
+   */
   public void sell(int sell) {
     int sold = 0;
     while (sell > 0) {

@@ -38,9 +38,7 @@ public class Stock {
   }
 
   /**
-   * Reduces the number of shares available.
-   * @param num Number of shares to be sold.
-   * @return Number of shares succesfully sold.
+   * Reduces the number of shares available by one.
    */
   public static void sell() {
     AVAILABLE--;

@@ -9,9 +9,8 @@ public class Game {
     Stock stock = new Stock();
     Watcher watcher = new Watcher(stock);
 
-    // TESTING
+    // TESTING - Add new players
     ArrayList<Player> players = new ArrayList<>();
-
     for (int i=0; i<Integer.parseInt(args[0]); i++)
       players.add(new Player(i+1, STARTCASH));
 
@@ -27,6 +26,7 @@ public class Game {
       while (!testInput(out))
         out = scanner.nextLine();
 
+      // get action and number
       String[] input = out.split(" ");
       if (input[0].equalsIgnoreCase("buy"))
         current.buy(Integer.parseInt(input[1]));
@@ -34,15 +34,22 @@ public class Game {
         current.sell(Integer.parseInt(input[1]));
 
       System.out.println(current);
+
+      // modify the stock price
       watcher.change(Watcher.type());
 
-      // TESTING
+      // TESTING - increase player turn
       playerTurn++;
       if (playerTurn == players.size())
         playerTurn = 0;
     }
   }
 
+  /**
+   * Checks whether input conforms to the command syntax.
+   * @param  String test  Input string to check.
+   * @return              Whether input is valid.
+   */
   public static boolean testInput(String test) {
     String[] t = test.split(" ");
     int ok = 0;
