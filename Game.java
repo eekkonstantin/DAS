@@ -1,6 +1,12 @@
+/* AUTHORSHIP STATEMENT
+Elizabeth Konstantin Kwek Jin Li (2287563K)
+DAS(H) COMPSCI 4019
+This is my own work as defined in the Academic Ethics agreement I have signed.
+*/
+
 import java.util.*;
 
-public class Game {
+public class Game implements Player.GameInteraction {
   public static final double STARTCASH = 100.0;
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
@@ -54,7 +60,7 @@ public class Game {
       System.err.println("Too many players. Please wait for a player to quit.");
       return -1;
     }
-    players.add(new Player(++cursize, STARTCASH));
+    players.add(new Player(++cursize, STARTCASH, this));
     return cursize;
   }
 
@@ -126,7 +132,7 @@ public class Game {
     }
   }
 
-  public static void removePlayer(Player player) {
+  public void removePlayer(Player player) {
     players.remove(player);
     if (players.size() == 1)
       endGame();

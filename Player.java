@@ -1,3 +1,9 @@
+/* AUTHORSHIP STATEMENT
+Elizabeth Konstantin Kwek Jin Li (2287563K)
+DAS(H) COMPSCI 4019
+This is my own work as defined in the Academic Ethics agreement I have signed.
+*/
+
 import java.util.*;
 
 public class Player {
@@ -15,11 +21,14 @@ public class Player {
 
   private int id;
 
+  private Game g;
 
-  public Player(int id, double cash) {
+
+  public Player(int id, double cash, Game game) {
     this.id = id;
     this.cash = cash;
     this.shares = 0;
+    this.g = game;
   }
 
   @Override
@@ -102,31 +111,37 @@ public class Player {
 
   /**
    * Get input from the player.
+   * @return whether the player quit.
    */
-  public void getInput() {
+  public boolean getInput() {
     // get input
     String out = "";
     while (!Game.testInput(out)) {
-      instructions();
+      Game.instructions();
       System.out.print("Command: ");
       out = scanner.nextLine();
     }
 
     // get action and number
     String[] input = out.toLowerCase().split(" ");
-    switch (COMMANDS.indexOf(input[0])) {
+    switch (Game.COMMANDS.indexOf(input[0])) {
       case 0: // buy
-        current.buy(Integer.parseInt(input[1]));
+        buy(Integer.parseInt(input[1]));
         break;
       case 1: // sell
-        current.sell(Integer.parseInt(input[1]));
+        sell(Integer.parseInt(input[1]));
         break;
       case 2: // pass
         break;
       case 3: // quit
-        current.quit();
-        Game.removePlayer(this);
-        break;
+        quit();
+        g.removePlayer(this);
+        return true;
     }
+    return false;
+  }
+
+  public interface GameInteraction {
+    public void removePlayer(Player player);
   }
 }

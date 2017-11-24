@@ -1,3 +1,9 @@
+/* AUTHORSHIP STATEMENT
+Elizabeth Konstantin Kwek Jin Li (2287563K)
+DAS(H) COMPSCI 4019
+This is my own work as defined in the Academic Ethics agreement I have signed.
+*/
+
 public class Run {
   public static void main(String[] args) {
 
@@ -37,14 +43,15 @@ public class Run {
       game.display();
 
       // TESTING BLOCK - turn-based
-      System.out.println("Player " + (playerTurn + 1) +"'s turn.");
-      game.getPlayer(playerTurn).getInput();
+      Player current = game.getPlayer(playerTurn);
+      System.out.println("Player " + current.getID() +"'s turn.");
+      if (!current.getInput()) { // no one quit
+        if (++playerTurn == game.players())
+          playerTurn = 0;
+      }
 
       if (game.isOn())
         game.affectStock(Watcher.type());
-
-      if (++playerTurn == game.players())
-        playerTurn = 0;
       // END TESTING BLOCK
     }
   }

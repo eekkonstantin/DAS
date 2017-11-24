@@ -1,3 +1,8 @@
+/* AUTHORSHIP STATEMENT
+Elizabeth Konstantin Kwek Jin Li (2287563K)
+DAS(H) COMPSCI 4019
+This is my own work as defined in the Academic Ethics agreement I have signed.
+*/
 public class Stock {
   /**
    * Total number of shares available
@@ -7,7 +12,7 @@ public class Stock {
   public static final double MIN = 0.01;
   public static final double MAX = 100.0;
 
-  private String NAME = "Apple";
+  private String name = "Apple";
 
   /**
    * Price of a single share

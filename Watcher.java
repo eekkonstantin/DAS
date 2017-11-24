@@ -1,3 +1,9 @@
+/* AUTHORSHIP STATEMENT
+Elizabeth Konstantin Kwek Jin Li (2287563K)
+DAS(H) COMPSCI 4019
+This is my own work as defined in the Academic Ethics agreement I have signed.
+*/
+
 import java.util.*;
 import java.text.DecimalFormat;
 
