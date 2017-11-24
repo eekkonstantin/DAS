@@ -10,12 +10,12 @@ public class Stock {
   /**
    * Price of a single share
    */
-  private double price;
+  public static double PRICE;
 
   /**
    * Number of shares currently available
    */
-  private int available;
+  public static int AVAILABLE;
 
   @Override
   public String toString() {
@@ -43,7 +43,7 @@ public class Stock {
    * to supply if no more shares are available.
    * @return Whether a share could be succesfully sold.
    */
-  public boolean sold() {
+  public static boolean sold() {
     if (available > 0) {
       available--;
       return true;
