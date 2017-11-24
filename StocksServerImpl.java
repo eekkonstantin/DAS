@@ -4,15 +4,20 @@ import java.rmi.server.ServerNotActiveException;
 import java.util.Random;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+
 public class StocksServerImpl extends java.rmi.server.UnicastRemoteObject implements StocksServer
 {
     static ArrayList<String> IPAddresses = new ArrayList<String>();
+    static ArrayList<Player> Players = new ArrayList<Player>();
+    //Stock Apple = new Stock();
+    int id = 1;
+    
     
 	protected StocksServerImpl() throws RemoteException
     {
 		super();
 	}
-
+    
 	public long[] syncTime() throws RemoteException
     {
 		long[] time = new long[2];
@@ -35,5 +40,12 @@ public class StocksServerImpl extends java.rmi.server.UnicastRemoteObject implem
 		IPAddresses.add(IPAddress);
 		return IPAddress;
 	}
-
+    
+    public void NewPlayer() throws RemoteException
+    {
+         Player p = new Player(id, 100.0, 0);
+         id++;
+         Players.add(p);
+        
+    }
 }
