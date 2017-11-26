@@ -5,9 +5,10 @@ This is my own work as defined in the Academic Ethics agreement I have signed.
 */
 
 import java.util.*;
+import java.rmi.RemoteException;
+import java.io.Serializable;
 
-public class Player {
-  private Scanner scanner = new Scanner(System.in);
+public class Player implements PlayerIf, Serializable {
 
   /**
    * Amount of cash available for use to the player.
@@ -21,10 +22,20 @@ public class Player {
 
   private int id;
 
-  private Game g;
+  private String name;
+
+  private GameIf g;
 
 
-  public Player(int id, double cash, Game game) {
+  public Player(int id, double cash, GameIf game) throws RemoteException {
+    this.id = id;
+    this.cash = cash;
+    this.shares = 0;
+    this.g = game;
+  }
+
+  public Player(int id, double cash, GameIf game, String name) throws RemoteException {
+    this.name = name;
     this.id = id;
     this.cash = cash;
     this.shares = 0;
@@ -33,7 +44,7 @@ public class Player {
 
   @Override
   public String toString() {
-    return "Player " + id + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth();
+    return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth();
   }
 
   @Override
@@ -55,6 +66,12 @@ public class Player {
 
   public int getID() {
     return id;
+  }
+
+  public String name() {
+    if (id == -1)
+      return name;
+    return "" + id;
   }
 
   /**
@@ -103,10 +120,17 @@ public class Player {
    */
   public void quit() {
     Stock.returned(shares);
-    System.out.println(
-      "Player " + id + " has left the game. " +
-      shares + " shares have been returned to the stock."
-    );
+    try {
+      GameServer.broadcast(
+        "Player " + name() + " has left the game. " +
+        shares + " shares have been returned to the stock."
+      );
+    } catch (Exception e) {
+      System.out.println(
+        "Player " + name() + " has left the game. " +
+        shares + " shares have been returned to the stock."
+      );
+    }
   }
 
   /**
@@ -114,6 +138,8 @@ public class Player {
    * @return whether the player quit.
    */
   public boolean getInput() {
+
+    Scanner scanner = new Scanner(System.in);
     // get input
     String out = "";
     while (!Game.testInput(out)) {
@@ -133,15 +159,23 @@ public class Player {
         break;
       case 2: // pass
         break;
-      case 3: // quit
+      case 3: // status
+        try {
+          // g.display();
+          System.out.println(g.getInfo());
+        } catch (Exception e) {
+          e.printStackTrace();
+        }
+        break;
+      case 4: // quit
         quit();
-        g.removePlayer(this);
+        try {
+          g.removePlayer(this);
+        } catch(Exception e) {
+          e.printStackTrace();
+        }
         return true;
     }
     return false;
-  }
-
-  public interface GameInteraction {
-    public void removePlayer(Player player);
   }
 }

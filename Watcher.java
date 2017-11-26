@@ -6,15 +6,16 @@ This is my own work as defined in the Academic Ethics agreement I have signed.
 
 import java.util.*;
 import java.text.DecimalFormat;
+import java.io.Serializable;
 
-public class Watcher {
+public class Watcher implements Serializable {
   public static final int MAJOR = 0;
   public static final int MINOR = 1;
   public static final double MIN = 0.005;
   public static final double MAX = 0.045;
   public static DecimalFormat df = new DecimalFormat("#.##");
 
-  private Stock stock;
+  private static Stock stock;
   private static Random rand = new Random();
 
   private HashMap<String, Double> badEvt = new HashMap<>();
@@ -75,7 +76,11 @@ public class Watcher {
         List<String> array = new ArrayList<>((good ? goodEvt : badEvt).keySet());
         String key = array.get(rkey);
 
-        System.out.println("BREAKING NEWS! " + key);
+        try {
+          GameServer.broadcast("BREAKING NEWS! " + key);
+        } catch(Exception e) {
+          System.out.println("BREAKING NEWS! " + key);
+        }
         inc = (good ? goodEvt.get(key) : badEvt.get(key)) * Stock.PRICE;
         break;
       case MINOR: // random percentage

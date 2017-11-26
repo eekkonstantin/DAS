@@ -44,7 +44,7 @@ public class Run {
 
       // TESTING BLOCK - turn-based
       Player current = game.getPlayer(playerTurn);
-      System.out.println("Player " + current.getID() +"'s turn.");
+      System.out.println("Player " + current.name() +"'s turn.");
       if (!current.getInput()) { // no one quit
         if (++playerTurn == game.players())
           playerTurn = 0;
