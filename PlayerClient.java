@@ -93,7 +93,10 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
       while (gi.isOn()) {
         quit = me.getInput();
         if (quit)
+        {
+          gs.quitChannel(pc);
           System.exit(0);
+        } 
       }
 
     } catch(Exception e) {

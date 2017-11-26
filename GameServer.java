@@ -18,6 +18,19 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
     members.add(member);
   }
 
+  public void quitChannel(PlayerClientIf member) throws RemoteException {
+      GameServer.broadcast(member.getName() + " has quited the channel.");
+      int id = 0;
+      for(PlayerClientIf m : members)
+      {
+        //System.out.println("=====================" + m + " " + member + "==============");
+        if(member.equals(m))
+        {
+          members.remove(member);
+          id++;
+        }
+      }
+  }
 
 
   public static void broadcast(String s) throws RemoteException {

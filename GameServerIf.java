@@ -4,4 +4,5 @@ import java.rmi.*;
 
 public interface GameServerIf extends Remote {
   public void joinChannel(PlayerClientIf member) throws RemoteException;
+  public void quitChannel(PlayerClientIf member) throws RemoteException;
 }
