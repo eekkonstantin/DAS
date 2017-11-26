@@ -46,7 +46,11 @@ public class Stock {
       PRICE = MIN;
 
     PRICE = Double.valueOf(Watcher.df.format(PRICE));
-    System.out.println("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
+    try {
+      GameServer.broadcast("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
+    } catch(Exception e) {
+      System.out.println("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
+    }
   }
 
   /**

@@ -8,7 +8,6 @@ import java.util.concurrent.TimeUnit;
 public class GameServer extends UnicastRemoteObject implements GameServerIf {
 
   public static ArrayList<PlayerClientIf> members = new ArrayList<>();
-  private Game game;
 
   public GameServer() throws RemoteException {
     super();
@@ -18,6 +17,8 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
     GameServer.broadcast(member.getName() + " has joined the channel.");
     members.add(member);
   }
+
+
 
   public static void broadcast(String s) throws RemoteException {
     System.out.println(s);

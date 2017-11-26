@@ -11,7 +11,7 @@ import java.io.Serializable;
 public class Game implements GameIf, Serializable {
   public static final double STARTCASH = 100.0;
   public static final int MIN_PLAYERS = 2;
-  public static final int MAX_PLAYERS = 2;
+  public static final int MAX_PLAYERS = 3;
 
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
     Arrays.asList("buy", "sell", "pass", "status", "quit")
@@ -51,6 +51,7 @@ public class Game implements GameIf, Serializable {
     } else {
       ongoing = true;
       GameServer.broadcast("************* NEW GAME *************");
+      // new NewsFlash(this, Watcher.MINOR).run();
       display();
     }
     return ongoing;
@@ -135,7 +136,6 @@ public class Game implements GameIf, Serializable {
    * @param int type  {@code MINOR} or {@code MAJOR} change
    */
   public void affectStock(int type) throws RemoteException {
-    GameServer.broadcast("");
     watcher.change(type);
   }
 

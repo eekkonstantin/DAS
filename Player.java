@@ -150,31 +150,30 @@ public class Player implements PlayerIf, Serializable {
 
     // get action and number
     String[] input = out.toLowerCase().split(" ");
-    switch (Game.COMMANDS.indexOf(input[0])) {
-      case 0: // buy
-        buy(Integer.parseInt(input[1]));
-        break;
-      case 1: // sell
-        sell(Integer.parseInt(input[1]));
-        break;
-      case 2: // pass
-        break;
-      case 3: // status
-        try {
+    try {
+      switch (Game.COMMANDS.indexOf(input[0])) {
+        case 0: // buy
+          buy(Integer.parseInt(input[1]));
+          System.out.println(g.getInfo());
+          break;
+        case 1: // sell
+          sell(Integer.parseInt(input[1]));
+          System.out.println(g.getInfo());
+          break;
+        case 2: // pass
+          break;
+        case 3: // status
           // g.display();
           System.out.println(g.getInfo());
-        } catch (Exception e) {
-          e.printStackTrace();
-        }
-        break;
-      case 4: // quit
-        quit();
-        try {
+          break;
+        case 4: // quit
+          quit();
           g.removePlayer(this);
-        } catch(Exception e) {
-          e.printStackTrace();
-        }
-        return true;
+          return true;
+      }
+
+    } catch(Exception e) {
+      e.printStackTrace();
     }
     return false;
   }
