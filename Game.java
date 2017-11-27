@@ -5,24 +5,23 @@ This is my own work as defined in the Academic Ethics agreement I have signed.
 */
 
 import java.util.*;
-import java.rmi.RemoteException;
-import java.io.Serializable;
 
-public class Game implements GameIf, Serializable {
+public class Game implements Player.GameInteraction {
   public static final double STARTCASH = 100.0;
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
 
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
-    Arrays.asList("buy", "sell", "pass", "status", "quit")
+    Arrays.asList("buy", "sell", "pass", "quit")
   );
+
+  private Scanner scanner = new Scanner(System.in);
 
   private Stock stock;
   private Watcher watcher;
 
   private ArrayList<Player> players;
   private boolean ongoing;
-  private int counter = 0;
 
   public Game(String stockName) {
     this.stock = new Stock(stockName);
@@ -30,30 +29,16 @@ public class Game implements GameIf, Serializable {
     this.players = new ArrayList<>();
   }
 
-  public void setName(String stockName) throws RemoteException {
-    if (!ongoing) {
-      this.stock = new Stock(stockName);
-      this.watcher = new Watcher(stock);
-      this.players = new ArrayList<>();
-      GameServer.broadcast("Stock name set to " + stockName + ".");
-    }
-  }
-
   /**
    * Starts the game if player numbers are between {@code MIN_PLAYERS} and
    * {@code MAX_PLAYERS}.
    * @return Whether the game has been successfully started.
    */
-  public boolean start() throws RemoteException {
-    if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS) {
+  public boolean start() {
+    if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS)
       ongoing = false;
-
-    } else {
+    else
       ongoing = true;
-      GameServer.broadcast("************* NEW GAME *************");
-      // new NewsFlash(this, Watcher.MINOR).run();
-      display();
-    }
     return ongoing;
   }
 
@@ -69,44 +54,23 @@ public class Game implements GameIf, Serializable {
    * is full.
    * @return Player ID. -1 if not added.
    */
-  public int addPlayer() throws RemoteException {
+  public int addPlayer() {
     int cursize = players.size();
     if (cursize == MAX_PLAYERS) {
-      // GameServer.broadcast("Too many players. Please wait for a player to quit.");
+      System.err.println("Too many players. Please wait for a player to quit.");
       return -1;
     }
-    players.add(new Player(++counter, STARTCASH, this));
-    GameServer.broadcast("Player " + counter + " has joined the game.");
-    return counter;
-  }
-  /**
-   * Adds a player to the game if there is space available. Returns -1 if game
-   * is full.
-   * @param String name Player name to use
-   * @return Player ID. -1 if not added.
-   */
-  public int addPlayer(String name, GameIf game) throws RemoteException {
-    int cursize = players.size();
-    if (cursize == MAX_PLAYERS) {
-      // GameServer.broadcast("Too many players. Please wait for a player to quit.", name);
-      return -1;
-    }
-    players.add(new Player(++counter, STARTCASH, game, name));
-    GameServer.broadcast("Player " + name + " has joined the game.");
-    return counter;
+    players.add(new Player(++cursize, STARTCASH, this));
+    return cursize;
   }
 
   /**
-   * Retrieves the player with the given id.
-   * @param  int id Player ID
+   * Retrieves the player at the given index.
+   * @param  int i  Index
    * @return        Player from {@code players} list.
    */
-  public Player getPlayer(int id) {
-    for (Player p : players) {
-      if (p.getID() == id)
-        return p;
-    }
-    return null;
+  public Player getPlayer(int i) {
+    return players.get(i);
   }
 
   /**
@@ -120,48 +84,67 @@ public class Game implements GameIf, Serializable {
    * Displays the current game statistics: Stock availability and prices, and
    * each player's assets.
    */
-  public void display() throws RemoteException {
-    GameServer.broadcast(getInfo());
-  }
-
-  public String getInfo() throws RemoteException {
-    String out = "\n" + stock;
+  public void display() {
+    System.out.println("\n" + stock);
     for (Player p : players)
-      out += "\n" + p;
-    return out + "\n";
+      System.out.println(p);
+    System.out.println();
   }
 
   /**
    * Triggers stock price fluctuation.
    * @param int type  {@code MINOR} or {@code MAJOR} change
    */
-  public void affectStock(int type) throws RemoteException {
+  public void affectStock(int type) {
     watcher.change(type);
   }
 
   /**
-   * Interface implementation.
-   * Removes a player when the player requests to `quit`.
-   * @param Player player Player to remove
+   * Get input from the specified player.
+   * @param Player current  Player to collect input from.
    */
+  public void getInput(Player current) {
+    // get input
+    String out = "";
+    while (!testInput(out)) {
+      instructions();
+      System.out.print("Command: ");
+      out = scanner.nextLine();
+    }
+
+    // get action and number
+    String[] input = out.split(" ");
+    switch (COMMANDS.indexOf(input[0])) {
+      case 0: // buy
+        current.buy(Integer.parseInt(input[1]));
+        break;
+      case 1: // sell
+        current.sell(Integer.parseInt(input[1]));
+        break;
+      case 2: // pass
+        break;
+      case 3: // quit
+        current.quit();
+        players.remove(current);
+        if (players.size() == 1)
+          endGame();
+    }
+  }
+
   public void removePlayer(Player player) {
     players.remove(player);
-    try {
-      if (players.size() == 1)
-        endGame();
-    } catch (Exception e) {
-      e.printStackTrace();
-    }
+    if (players.size() == 1)
+      endGame();
   }
 
   /**
    * Triggers end of game. If there is only one player left, the player wins by
    * default. Otherwise, this method is called when a timer or counter expires.
    */
-  public void endGame() throws RemoteException {
-    String out = "\n************* GAME ENDED *************";
+  public void endGame() {
+    System.out.println("\n************* GAME ENDED *************");
     if (players.size() == 1)
-      out += "\nWINNER! " + players.get(0);
+      System.out.println("WINNER! " + players.get(0));
     else {
       double topScore = 0;
       for (Player p : players) {
@@ -170,9 +153,8 @@ public class Game implements GameIf, Serializable {
       }
 
       for (Player p : players)
-        out += "\n" + (p.getWorth() == topScore ? "WINNER! " : "") + p;
+        System.out.println( (p.getWorth() == topScore ? "WINNER! " : "") + p);
     }
-    GameServer.broadcast(out);
     ongoing = false;
   }
 
@@ -201,17 +183,9 @@ public class Game implements GameIf, Serializable {
    * Static method to display instructions.
    */
   public static void instructions() {
-    try {
-      GameServer.broadcast("To see current status of the game, use\t\t\t[ status ]");
-      GameServer.broadcast("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
-      GameServer.broadcast("To pass, use\t\t\t[ pass ]");
-      GameServer.broadcast("To quit, use\t\t\t[ quit ]");
-    } catch (Exception e) {
-      System.out.println("To see current status of the game, use\t\t\t[ status ]");
-      System.out.println("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
-      System.out.println("To pass, use\t\t\t[ pass ]");
-      System.out.println("To quit, use\t\t\t[ quit ]");
-    }
+    System.out.println("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
+    System.out.println("To pass, use\t\t\t[ pass ]");
+    System.out.println("To quit, use\t\t\t[ quit ]");
   }
 
 
