@@ -68,15 +68,23 @@ public class Game implements GameIf, Serializable {
           {
             try
             {
-            //GameServer.broadcast("Stock name set to ");
-            while(isOn())
+            long duration = System.currentTimeMillis() + 60000;
+            boolean stat = isOn();
+            while(stat == true)
             {
-
+              stat = isOn();
+              if (System.currentTimeMillis() > duration)
+              {
+                  endGame();   
+              }
+                    
                 Thread.sleep(10000);
                 affectStock(watcher.type());
                 GameServer.broadcast("===================== SHARE PRICE =====================");
                 GameServer.broadcast(stock.toString());
+                System.out.print(" ==============" + isOn());
             } 
+            System.out.print(" end" + isOn());
           }
           catch (InterruptedException e) {
                 System.out.println("interrupted");
@@ -164,7 +172,7 @@ public class Game implements GameIf, Serializable {
   public String getInfo() throws RemoteException {
     String out = "\n" + stock;
     for (Player p : players)
-      out += "\n" + p;
+      out += "\n" + p.name();
     return out + "\n";
   }
 
@@ -198,16 +206,17 @@ public class Game implements GameIf, Serializable {
   public void endGame() throws RemoteException {
     String out = "\n************* GAME ENDED *************";
     if (players.size() == 1)
-      out += "\nWINNER! " + players.get(0);
+      out += "\nWINNER WINNER CHICKEN DINNER! " + players.get(0).name();
     else {
       double topScore = 0;
       for (Player p : players) {
-        if (p.getWorth() >= topScore)
-          topScore = p.getWorth();
+        if (p.getWorth(stock) >= topScore)
+          topScore = p.getWorth(stock);
       }
 
       for (Player p : players)
-        out += "\n" + (p.getWorth() == topScore ? "WINNER! " : "") + p;
+        out += "\n" + (p.getWorth(stock) == topScore ? "WINNER! " : "") + p.name();
+        System.out.println(p.getWorth(stock) + "================");
     }
     GameServer.broadcast(out);
     ongoing = false;

@@ -24,6 +24,7 @@ public class Stock {
   public Stock(String name) {
     this.name = name;
     this.price = price;
+    this.AVAILABLE = SUPPLY;
   }
 
   @Override

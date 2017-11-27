@@ -42,9 +42,16 @@ public class Player implements PlayerIf, Serializable {
     this.g = game;
   }
 
-  @Override
-  public String toString() {
-    return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth();
+ //@Override
+  public String toString(int a) {
+    try{
+      return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + a;
+    }
+    catch (Exception e) {
+      System.out.println("");
+      return null;
+    }
+    
   }
 
   @Override
@@ -57,16 +64,15 @@ public class Player implements PlayerIf, Serializable {
    * @return Net worth of player.
    */
 
-  // HARD CODED FIX LATER
-  public double getWorth() {
-    return Double.valueOf(Watcher.df.format(this.cash + (this.shares * 100)));
+  public double getWorth(Stock s) {
+    return Double.valueOf(Watcher.df.format(this.cash + (this.shares * s.price)));
   }
 
   public double getCash() {
     return cash;
   }
 
-  public int getShares() {
+  public int getShares() throws RemoteException{
     return shares;
   }
 
