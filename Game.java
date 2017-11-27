@@ -5,23 +5,31 @@ This is my own work as defined in the Academic Ethics agreement I have signed.
 */
 
 import java.util.*;
+import java.rmi.RemoteException;
+import java.io.Serializable;
+import java.rmi.server.UnicastRemoteObject;
+import java.rmi.*;
+import java.rmi.server.*;
+import java.net.*;
 
-public class Game implements Player.GameInteraction {
+public class Game implements GameIf, Serializable {
   public static final double STARTCASH = 100.0;
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
+  private int shares;
+  
 
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
-    Arrays.asList("buy", "sell", "pass", "quit")
+    Arrays.asList("buy", "sell", "pass", "status", "quit")
   );
-
-  private Scanner scanner = new Scanner(System.in);
 
   private Stock stock;
   private Watcher watcher;
 
   private ArrayList<Player> players;
   private boolean ongoing;
+  private int counter = 0;
+
 
   public Game(String stockName) {
     this.stock = new Stock(stockName);
@@ -29,16 +37,60 @@ public class Game implements Player.GameInteraction {
     this.players = new ArrayList<>();
   }
 
+  public void setName(String stockName) throws RemoteException {
+    if (!ongoing) {
+      this.stock = new Stock(stockName);
+      this.watcher = new Watcher(stock);
+      this.players = new ArrayList<>();
+      GameServer.broadcast("Stock name set to " + stockName + ".");
+    }
+  }
+
   /**
    * Starts the game if player numbers are between {@code MIN_PLAYERS} and
    * {@code MAX_PLAYERS}.
    * @return Whether the game has been successfully started.
    */
-  public boolean start() {
-    if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS)
+  public boolean start() throws RemoteException {
+    if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS) {
       ongoing = false;
-    else
+
+    } else {
       ongoing = true;
+      GameServer.broadcast("===================== NEW GAME =====================");
+      GameServer.broadcast("Welcome to stocks simulator! Where every 5 second shares will have movement!");
+      // new NewsFlash(this, Watcher.MINOR).run();
+      display();
+      
+      Thread t = new Thread()
+      {
+          public void run() 
+          {
+            try
+            {
+            //GameServer.broadcast("Stock name set to ");
+            while(isOn())
+            {
+
+                Thread.sleep(10000);
+                affectStock(watcher.type());
+                GameServer.broadcast("===================== SHARE PRICE =====================");
+                GameServer.broadcast(stock.toString());
+            } 
+          }
+          catch (InterruptedException e) {
+                System.out.println("interrupted");
+                e.printStackTrace();
+            }
+           catch(Exception e){
+              System.out.println("interrupted");      // Always must return something
+            }
+            
+              
+          }
+      };
+      t.start();
+    }
     return ongoing;
   }
 
@@ -54,23 +106,44 @@ public class Game implements Player.GameInteraction {
    * is full.
    * @return Player ID. -1 if not added.
    */
-  public int addPlayer() {
+  public int addPlayer() throws RemoteException {
     int cursize = players.size();
     if (cursize == MAX_PLAYERS) {
-      System.err.println("Too many players. Please wait for a player to quit.");
+      // GameServer.broadcast("Too many players. Please wait for a player to quit.");
       return -1;
     }
-    players.add(new Player(++cursize, STARTCASH, this));
-    return cursize;
+    players.add(new Player(++counter, STARTCASH, this));
+    GameServer.broadcast("Player " + counter + " has joined the game.");
+    return counter;
+  }
+  /**
+   * Adds a player to the game if there is space available. Returns -1 if game
+   * is full.
+   * @param String name Player name to use
+   * @return Player ID. -1 if not added.
+   */
+  public int addPlayer(String name, GameIf game) throws RemoteException {
+    int cursize = players.size();
+    if (cursize == MAX_PLAYERS) {
+      // GameServer.broadcast("Too many players. Please wait for a player to quit.", name);
+      return -1;
+    }
+    players.add(new Player(++counter, STARTCASH, game, name));
+    GameServer.broadcast("Player " + name + " has joined the game.");
+    return counter;
   }
 
   /**
-   * Retrieves the player at the given index.
-   * @param  int i  Index
+   * Retrieves the player with the given id.
+   * @param  int id Player ID
    * @return        Player from {@code players} list.
    */
-  public Player getPlayer(int i) {
-    return players.get(i);
+  public Player getPlayer(int id) {
+    for (Player p : players) {
+      if (p.getID() == id)
+        return p;
+    }
+    return null;
   }
 
   /**
@@ -84,67 +157,48 @@ public class Game implements Player.GameInteraction {
    * Displays the current game statistics: Stock availability and prices, and
    * each player's assets.
    */
-  public void display() {
-    System.out.println("\n" + stock);
+  public void display() throws RemoteException {
+    GameServer.broadcast(getInfo());
+  }
+
+  public String getInfo() throws RemoteException {
+    String out = "\n" + stock;
     for (Player p : players)
-      System.out.println(p);
-    System.out.println();
+      out += "\n" + p;
+    return out + "\n";
   }
 
   /**
    * Triggers stock price fluctuation.
    * @param int type  {@code MINOR} or {@code MAJOR} change
    */
-  public void affectStock(int type) {
+  public void affectStock(int type){
     watcher.change(type);
   }
 
   /**
-   * Get input from the specified player.
-   * @param Player current  Player to collect input from.
+   * Interface implementation.
+   * Removes a player when the player requests to `quit`.
+   * @param Player player Player to remove
    */
-  public void getInput(Player current) {
-    // get input
-    String out = "";
-    while (!testInput(out)) {
-      instructions();
-      System.out.print("Command: ");
-      out = scanner.nextLine();
-    }
-
-    // get action and number
-    String[] input = out.split(" ");
-    switch (COMMANDS.indexOf(input[0])) {
-      case 0: // buy
-        current.buy(Integer.parseInt(input[1]));
-        break;
-      case 1: // sell
-        current.sell(Integer.parseInt(input[1]));
-        break;
-      case 2: // pass
-        break;
-      case 3: // quit
-        current.quit();
-        players.remove(current);
-        if (players.size() == 1)
-          endGame();
-    }
-  }
-
   public void removePlayer(Player player) {
     players.remove(player);
-    if (players.size() == 1)
-      endGame();
+    try {
+      if (players.size() == 1)
+        endGame();
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 
   /**
    * Triggers end of game. If there is only one player left, the player wins by
    * default. Otherwise, this method is called when a timer or counter expires.
    */
-  public void endGame() {
-    System.out.println("\n************* GAME ENDED *************");
+  public void endGame() throws RemoteException {
+    String out = "\n************* GAME ENDED *************";
     if (players.size() == 1)
-      System.out.println("WINNER! " + players.get(0));
+      out += "\nWINNER! " + players.get(0);
     else {
       double topScore = 0;
       for (Player p : players) {
@@ -153,42 +207,95 @@ public class Game implements Player.GameInteraction {
       }
 
       for (Player p : players)
-        System.out.println( (p.getWorth() == topScore ? "WINNER! " : "") + p);
+        out += "\n" + (p.getWorth() == topScore ? "WINNER! " : "") + p;
     }
+    GameServer.broadcast(out);
     ongoing = false;
   }
 
-  /**
-   * Checks whether input conforms to the command syntax.
-   * @param  String test  Input string to check.
-   * @return              Whether input is valid.
+  public void action(Player p, String out) throws RemoteException
+  {
+
+    String[] input = out.split(" ");
+    switch (COMMANDS.indexOf(input[0])) {
+      case 0: // buy
+        buy(Integer.parseInt(input[1]), p);
+        break;
+      case 1: // sell
+        sell(Integer.parseInt(input[1]), p);
+        break;
+      case 2: // pass
+        break;
+      case 3: // quit
+        quit();
+        players.remove(p);
+        if (players.size() == 1)
+          endGame();
+      }
+  }
+ /**
+   * Get input from the player.
+   * @return whether the player quit.
    */
-  public static boolean testInput(String test) {
-    String[] t = test.split(" ");
-    switch (t.length) {
-      case 2:
-        int ok = 0;
-        if (t[0].equalsIgnoreCase("buy") || t[0].equalsIgnoreCase("sell"))
-          ok++;
-        if (t[1].matches("^[0-9]*([,]{1}[0-9]{0,2}){0,1}$"))
-          ok++;
-        return (ok == 2);
-      case 1:
-        return COMMANDS.indexOf(t[0]) > 1;
+ 
+ /**
+   * Allows the player to sell their shares. If the player does not have enough
+   * shares to sell, all remaining shares will be sold.
+   * @param int sell   Number of shåares the player wishes to sell
+   */
+  public synchronized void sell(int sell, Player p) throws RemoteException
+  {
+    int sold = 0;
+    while (sell > 0) {
+      if (shares == 0)
+        break;
+      sell--;
+      shares--;
+      p.cash += stock.getPrice();
+      stock.returned();
+      sold++;
     }
-    return false;
+    p.cash = Double.valueOf(Watcher.df.format(p.cash));
+    GameServer.broadcast(p.name + " " + sold + " shares sold.");
+  }
+
+
+  public synchronized void buy(int buy, Player p) throws RemoteException
+  {
+    int bought = 0;
+    while (buy > 0) {
+      if (p.cash < stock.getPrice() || stock.getPrice() <= 0)
+        break;
+      p.cash -= stock.getPrice();
+      stock.sell();
+      shares++;
+      bought++;
+      buy--;
+    }
+    p.cash = Double.valueOf(Watcher.df.format(p.cash));
+    GameServer.broadcast(p.name + " bought " + bought + " shares at " + stock.getPrice());
   }
 
   /**
-   * Static method to display instructions.
+   * Allows the player to leave the game, returning all shares back to the stock.
    */
-  public static void instructions() {
-    System.out.println("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
-    System.out.println("To pass, use\t\t\t[ pass ]");
-    System.out.println("To quit, use\t\t\t[ quit ]");
+  public synchronized void quit() throws RemoteException
+  {
+    stock.returned(shares);
+    /*
+    try {
+      GameServer.broadcast(
+        "Player " + name() + " has left the game. " +
+        shares + " shares have been returned to the stock."
+      );
+    } catch (Exception e) {
+      System.out.println(
+        "Player " + name() + " has left the game. " +
+        shares + " shares have been returned to the stock."
+      );
+    }
+    */
   }
-
-
 
 
 }

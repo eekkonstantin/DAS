@@ -3,11 +3,14 @@ import java.rmi.*;
 import java.rmi.server.*;
 import java.rmi.server.UnicastRemoteObject;
 import java.net.*;
-import java.util.concurrent.TimeUnit;
+import java.util.*;
 
 public class GameServer extends UnicastRemoteObject implements GameServerIf {
 
   public static ArrayList<PlayerClientIf> members = new ArrayList<>();
+  
+  String[] rName = { "Nyan", "Grumpy Cat", "Roux", "Pancake" };
+
 
   public GameServer() throws RemoteException {
     super();
@@ -16,6 +19,7 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
   public void joinChannel(PlayerClientIf member) throws RemoteException {
     GameServer.broadcast(member.getName() + " has joined the channel.");
     members.add(member);
+   // delays.add(t);
   }
 
   public void quitChannel(PlayerClientIf member) throws RemoteException {
@@ -33,6 +37,13 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
   }
 
 
+  public long syncTime(long ct) throws RemoteException {
+    long st = System.currentTimeMillis();
+    long delay = (st - ct) * 2; // to and for
+    return delay;
+  }
+
+
   public static void broadcast(String s) throws RemoteException {
     System.out.println(s);
     for (PlayerClientIf member: GameServer.members) {
@@ -41,25 +52,25 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
   }
 
   public static void main(String[] args) {
-    String host = "localhost";
-    int port = 1099;
+      String host = "localhost";
+      int port = 1099;
 
-    try {
-      GameServer gs = new GameServer();
+      try {
+        GameServer gs = new GameServer();
 
-      Game game = new Game("Default");
-      GameIf gameIf = (GameIf) UnicastRemoteObject.exportObject(game, 0);
+        Game game = new Game("Default");
+        GameIf gameIf = (GameIf) UnicastRemoteObject.exportObject(game, 0);
 
-      Naming.rebind("//"+host+":"+port+"/Game", gameIf);
-      Naming.rebind("//"+host+":"+port+"/GameServer", gs);
+        Naming.rebind("//"+host+":"+port+"/Game", gameIf);
+        Naming.rebind("//"+host+":"+port+"/GameServer", gs);
 
-      System.out.println("Server ready.");
+        System.out.println("Server ready.");
 
 
-    } catch(Exception e) {
-      e.printStackTrace();
+      } catch(Exception e) {
+        e.printStackTrace();
+      }
     }
-  }
 
 
   public static String lobby() {
@@ -80,4 +91,5 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
 
     return "Default";
   }
+
 }

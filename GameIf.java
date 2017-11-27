@@ -66,4 +66,11 @@ public interface GameIf extends Remote {
 
   public void removePlayer(Player player) throws RemoteException;
 
+  public void action(Player p, String out) throws RemoteException;
+
+  public void sell(int sell, Player p) throws RemoteException;
+
+  public void buy(int sell, Player p) throws RemoteException;
+
+  public void quit() throws RemoteException;
 }

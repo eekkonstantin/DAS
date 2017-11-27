@@ -8,16 +8,13 @@ public class Stock {
    * Total number of shares available
    */
   public static final int SUPPLY = 100;
-
   public static final double MIN = 0.01;
   public static final double MAX = 100.0;
 
   private String name = "Apple";
 
-  /**
-   * Price of a single share
-   */
-  public static double PRICE = 10;
+  public double price = 10;
+  
 
   /**
    * Number of shares currently available
@@ -26,32 +23,38 @@ public class Stock {
 
   public Stock(String name) {
     this.name = name;
+    this.price = price;
   }
 
   @Override
   public String toString() {
-    return name + ": " + AVAILABLE + " shares available at $" + PRICE + " each.";
+    return name + ": " + AVAILABLE + " shares available at $" + price + " each.";
   }
 
+  public double getPrice()
+  {
+    return this.price; 
+  }
   /**
    * Changes the price of each share.
    * @param double change Amount to change the price by.
    */
   public void changePrice(double change) {
-    PRICE += change;
+    price += change;
 
-    if (PRICE > MAX)
-      PRICE = MAX;
-    if (PRICE < MIN)
-      PRICE = MIN;
+    if (price > MAX)
+      price = MAX;
+    if (price < MIN)
+      price = MIN;
 
-    PRICE = Double.valueOf(Watcher.df.format(PRICE));
+    price = Double.valueOf(Watcher.df.format(price));
     try {
       GameServer.broadcast("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
     } catch(Exception e) {
       System.out.println("Share price " + (change < 0 ? "dropped by $" + (change * -1) : "increased by $" + change) + ".");
     }
   }
+
 
   /**
    * Reduces the number of shares available by one.

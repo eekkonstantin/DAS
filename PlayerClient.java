@@ -6,6 +6,9 @@ import java.util.*;
 public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf {
   private static String host = "localhost";
   private static int port = 1099;
+  public static final ArrayList<String> COMMANDS = new ArrayList<>(
+    Arrays.asList("buy", "sell", "pass", "status", "quit")
+  );
 
   private Player me;
   private String name;
@@ -16,11 +19,11 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
   }
 
   public PlayerClient(String h, int p) throws RemoteException {
-	  super();
-	  host = h;
-	  port = p;
+    super();
+    host = h;
+    port = p;
     this.name = name;
-	}
+  }
 
   public String getName() {
     return name;
@@ -30,7 +33,43 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
     System.out.println(s);
   }
 
+/**
+   * Checks whether input conforms to the command syntax.
+   * @param  String test  Input string to check.
+   * @return              Whether input is valid.
+   */
+  public static boolean testInput(String test) {
+    String[] t = test.split(" ");
+    switch (t.length) {
+      case 2:
+        int ok = 0;
+        if (t[0].equalsIgnoreCase("buy") || t[0].equalsIgnoreCase("sell"))
+          ok++;
+        if (t[1].matches("^[0-9]*([,]{1}[0-9]{0,2}){0,1}$"))
+          ok++;
+        return (ok == 2);
+      case 1:
+        return COMMANDS.indexOf(t[0]) > 1;
+    }
+    return false;
+  }
+  /**
+   * Static method to display instructions.
+   */
+  public static void instructions() {
+    try {
+      GameServer.broadcast("To see current status of the game, use\t\t\t[ status ]");
+      GameServer.broadcast("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
+    //  GameServer.broadcast("To pass, use\t\t\t[ pass ]");
+      GameServer.broadcast("To quit, use\t\t\t[ quit ]");
+    } catch (Exception e) {
+      System.out.println("To see current status of the game, use\t\t\t[ status ]");
+      System.out.println("To buy or sell shares, use\t[ buy | sell ] [ No. of shares ]");
+    //  System.out.println("To pass, use\t\t\t[ pass ]");
+      System.out.println("To quit, use\t\t\t[ quit ]");
+    }
 
+  }
 
   public static void main(String[] args) {
     String name = "Undefined";
@@ -88,19 +127,27 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
       }
 
       // ************* NEW GAME *************
-      boolean quit = false;
+      //boolean quit = false;
       me = gi.getPlayer(pID);
+      instructions();
+      System.out.print("Command: ");
       while (gi.isOn()) {
-        quit = me.getInput();
-        if (quit)
-        {
-          gs.quitChannel(pc);
-          System.exit(0);
-        } 
+        Scanner scanner = new Scanner(System.in);
+        // get input
+        String out = scanner.nextLine();
+        while (!testInput(out)) {
+          instructions();
+          System.out.print("Command: ");
+          out = scanner.nextLine();
+        }
+
+        gi.action(me, out);
+        
       }
 
     } catch(Exception e) {
       e.printStackTrace();
     }
   }
+
 }

@@ -77,15 +77,17 @@ public class Watcher implements Serializable {
         String key = array.get(rkey);
 
         try {
-          GameServer.broadcast("BREAKING NEWS! " + key);
+          GameServer.broadcast("===================== BREAKING NEWS!===================== ");
+          GameServer.broadcast(key);
         } catch(Exception e) {
-          System.out.println("BREAKING NEWS! " + key);
+          System.out.println("===================== BREAKING NEWS!===================== ");
+          System.out.println(key);
         }
-        inc = (good ? goodEvt.get(key) : badEvt.get(key)) * Stock.PRICE;
+        inc = (good ? goodEvt.get(key) : badEvt.get(key)) * stock.price;
         break;
       case MINOR: // random percentage
         double percentage = MIN + (MAX - MIN) * rand.nextDouble();
-        inc = percentage * Stock.PRICE;
+        inc = percentage * stock.price;
         break;
       default:
         System.exit(0);
