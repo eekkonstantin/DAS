@@ -10,6 +10,8 @@ public interface PlayerIf extends Remote {
 
   public int getShares() throws RemoteException;
 
+  public int getID() throws RemoteException;
+
   /**
    * Get input from the player.
    * @return whether the player quit.

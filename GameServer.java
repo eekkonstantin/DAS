@@ -8,7 +8,7 @@ import java.util.*;
 public class GameServer extends UnicastRemoteObject implements GameServerIf {
 
   public static ArrayList<PlayerClientIf> members = new ArrayList<>();
-  
+
   String[] rName = { "Nyan", "Grumpy Cat", "Roux", "Pancake" };
 
 
@@ -28,7 +28,7 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
       for(PlayerClientIf m : members)
       {
         //System.out.println("=====================" + m + " " + member + "==============");
-        if(member.equals(m))
+        if(member.getID() == m.getID())
         {
           members.remove(member);
           id++;
@@ -48,6 +48,15 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
     System.out.println(s);
     for (PlayerClientIf member: GameServer.members) {
       member.callback(s);
+    }
+  }
+
+  public static void message(String s, int pID) throws RemoteException {
+    for (PlayerClientIf member : GameServer.members) {
+      if (member.getID() == pID) {
+        member.callback(s);
+        break;
+      }
     }
   }
 

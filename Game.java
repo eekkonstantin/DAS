@@ -17,7 +17,7 @@ public class Game implements GameIf, Serializable {
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
   private int shares;
-  
+
 
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
     Arrays.asList("buy", "sell", "pass", "status", "quit")
@@ -61,10 +61,10 @@ public class Game implements GameIf, Serializable {
       GameServer.broadcast("Welcome to stocks simulator! Where every 5 second shares will have movement!");
       // new NewsFlash(this, Watcher.MINOR).run();
       display();
-      
+
       Thread t = new Thread()
       {
-          public void run() 
+          public void run()
           {
             try
             {
@@ -75,15 +75,15 @@ public class Game implements GameIf, Serializable {
               stat = isOn();
               if (System.currentTimeMillis() > duration)
               {
-                  endGame();   
+                  endGame();
               }
-                    
+
                 Thread.sleep(10000);
                 affectStock(watcher.type());
                 GameServer.broadcast("===================== SHARE PRICE =====================");
                 GameServer.broadcast(stock.toString());
                 System.out.print(" ==============" + isOn());
-            } 
+            }
             System.out.print(" end" + isOn());
           }
           catch (InterruptedException e) {
@@ -93,8 +93,8 @@ public class Game implements GameIf, Serializable {
            catch(Exception e){
               System.out.println("interrupted");      // Always must return something
             }
-            
-              
+
+
           }
       };
       t.start();
@@ -146,7 +146,7 @@ public class Game implements GameIf, Serializable {
    * @param  int id Player ID
    * @return        Player from {@code players} list.
    */
-  public Player getPlayer(int id) {
+  public Player getPlayer(int id) throws RemoteException {
     for (Player p : players) {
       if (p.getID() == id)
         return p;
@@ -172,7 +172,7 @@ public class Game implements GameIf, Serializable {
   public String getInfo() throws RemoteException {
     String out = "\n" + stock;
     for (Player p : players)
-      out += "\n" + p.name();
+      out += "\n" + p.toString(stock);
     return out + "\n";
   }
 
@@ -214,9 +214,10 @@ public class Game implements GameIf, Serializable {
           topScore = p.getWorth(stock);
       }
 
-      for (Player p : players)
+      for (Player p : players) {
         out += "\n" + (p.getWorth(stock) == topScore ? "WINNER! " : "") + p.name();
         System.out.println(p.getWorth(stock) + "================");
+      }
     }
     GameServer.broadcast(out);
     ongoing = false;
@@ -235,7 +236,10 @@ public class Game implements GameIf, Serializable {
         break;
       case 2: // pass
         break;
-      case 3: // quit
+      case 3: // status
+        GameServer.message(getInfo(), p.getID());
+        break;
+      case 4: // quit
         quit();
         players.remove(p);
         if (players.size() == 1)
@@ -246,7 +250,7 @@ public class Game implements GameIf, Serializable {
    * Get input from the player.
    * @return whether the player quit.
    */
- 
+
  /**
    * Allows the player to sell their shares. If the player does not have enough
    * shares to sell, all remaining shares will be sold.
@@ -256,16 +260,26 @@ public class Game implements GameIf, Serializable {
   {
     int sold = 0;
     while (sell > 0) {
-      if (shares == 0)
+      if (p.shares == 0)
         break;
       sell--;
-      shares--;
+      p.shares--;
       p.cash += stock.getPrice();
       stock.returned();
       sold++;
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
+    setPlayer(p);
     GameServer.broadcast(p.name + " " + sold + " shares sold.");
+  }
+
+  private void setPlayer(Player p) throws RemoteException {
+    for (int i=0; i<players.size(); i++) {
+      if (players.get(i).getID() == p.getID()) {
+        players.set(i, p);
+        break;
+      }
+    }
   }
 
 
@@ -277,11 +291,12 @@ public class Game implements GameIf, Serializable {
         break;
       p.cash -= stock.getPrice();
       stock.sell();
-      shares++;
+      p.shares++;
       bought++;
       buy--;
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
+    setPlayer(p);
     GameServer.broadcast(p.name + " bought " + bought + " shares at " + stock.getPrice());
   }
 

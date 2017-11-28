@@ -18,7 +18,7 @@ public class Player implements PlayerIf, Serializable {
   /**
    * Amount of shares owned by the player. Initializes to 0;.
    */
-  
+
 
   public int id;
 
@@ -43,20 +43,28 @@ public class Player implements PlayerIf, Serializable {
   }
 
  //@Override
-  public String toString(int a) {
+  public String toString(Stock s) {
     try{
-      return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + a;
+      return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth(s);
     }
     catch (Exception e) {
       System.out.println("");
       return null;
     }
-    
+
+  }
+
+  public void setGame(GameIf game) {
+    this.g = game;
   }
 
   @Override
   public boolean equals(Object other) {
-    return this.id == ((Player) other).getID();
+    try {
+      return this.id == ((Player) other).getID();
+    } catch (Exception e) {
+      return false;
+    }
   }
 
   /**
@@ -76,7 +84,7 @@ public class Player implements PlayerIf, Serializable {
     return shares;
   }
 
-  public int getID() {
+  public int getID() throws RemoteException {
     return id;
   }
 
@@ -92,5 +100,5 @@ public class Player implements PlayerIf, Serializable {
    * shares for sale, the player receives all the shares available
    * @param int buy   Number of shares the player wishes to buy
    */
-  
+
 }
