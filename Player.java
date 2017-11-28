@@ -89,7 +89,7 @@ public class Player implements PlayerIf, Serializable {
   }
 
   public String name() {
-    if (id == -1)
+    if (name != null)
       return name;
     return "" + id;
   }
