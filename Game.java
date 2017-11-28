@@ -17,7 +17,7 @@ public class Game implements GameIf, Serializable {
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
   private int shares;
-
+  
 
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
     Arrays.asList("buy", "sell", "pass", "status", "quit")
@@ -64,26 +64,29 @@ public class Game implements GameIf, Serializable {
 
       Thread t = new Thread()
       {
-          public void run()
+          public void run() 
           {
             try
             {
             long duration = System.currentTimeMillis() + 60000;
             boolean stat = isOn();
-            while(stat == true)
+            while(stat)
             {
               stat = isOn();
-              if (System.currentTimeMillis() > duration)
+              if(stat)
               {
-                  endGame();
-              }
-
+                if (System.currentTimeMillis() > duration)
+                {
+                    endGame(); 
+                    System.exit(0);  
+                }
+                    
                 Thread.sleep(10000);
                 affectStock(watcher.type());
                 GameServer.broadcast("===================== SHARE PRICE =====================");
                 GameServer.broadcast(stock.toString());
-                System.out.print(" ==============" + isOn());
-            }
+              }
+            } 
             System.out.print(" end" + isOn());
           }
           catch (InterruptedException e) {
@@ -92,9 +95,7 @@ public class Game implements GameIf, Serializable {
             }
            catch(Exception e){
               System.out.println("interrupted");      // Always must return something
-            }
-
-
+            } 
           }
       };
       t.start();
@@ -206,7 +207,7 @@ public class Game implements GameIf, Serializable {
   public void endGame() throws RemoteException {
     String out = "\n************* GAME ENDED *************";
     if (players.size() == 1)
-      out += "\nWINNER WINNER CHICKEN DINNER! " + players.get(0).toString(stock);
+      out += "\nWINNER! " + players.get(0).toString(stock);
     else {
       double topScore = 0;
       for (Player p : players) {
@@ -244,13 +245,14 @@ public class Game implements GameIf, Serializable {
         players.remove(p);
         if (players.size() == 1)
           endGame();
+        break;
       }
   }
  /**
    * Get input from the player.
    * @return whether the player quit.
    */
-
+ 
  /**
    * Allows the player to sell their shares. If the player does not have enough
    * shares to sell, all remaining shares will be sold.
@@ -282,7 +284,6 @@ public class Game implements GameIf, Serializable {
     }
   }
 
-
   public synchronized void buy(int buy, Player p) throws RemoteException
   {
     int bought = 0;
@@ -303,11 +304,10 @@ public class Game implements GameIf, Serializable {
   /**
    * Allows the player to leave the game, returning all shares back to the stock.
    */
-  public synchronized void quit() throws RemoteException
+  public void quit() throws RemoteException
   {
     stock.returned(shares);
-    /*
-    try {
+   /*     try {
       GameServer.broadcast(
         "Player " + name() + " has left the game. " +
         shares + " shares have been returned to the stock."
@@ -317,8 +317,7 @@ public class Game implements GameIf, Serializable {
         "Player " + name() + " has left the game. " +
         shares + " shares have been returned to the stock."
       );
-    }
-    */
+    }*/
   }
 
 

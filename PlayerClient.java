@@ -137,19 +137,28 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
       me = gi.getPlayer(pID);
       instructions();
       System.out.print("Command: ");
+      
+      String out = "";
       while (gi.isOn()) {
         Scanner scanner = new Scanner(System.in);
+        out = scanner.nextLine();
         // get input
-        String out = scanner.nextLine();
         while (!testInput(out)) {
           instructions();
           System.out.print("Command: ");
           out = scanner.nextLine();
         }
-
         gi.action(me, out);
-
+        
       }
+      //System.out.println("======="+ out);
+      if(out.equals("quit"))
+        {
+
+          System.out.println("======="+ out);
+          gs.quitChannel(pc);
+          System.exit(0);
+        }
 
     } catch(Exception e) {
       e.printStackTrace();
