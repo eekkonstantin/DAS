@@ -10,23 +10,15 @@ import java.io.Serializable;
 
 public class Player implements PlayerIf, Serializable {
 
-  /**
-   * Amount of cash available for use to the player.
-   */
-  public double cash;
+  public double cash; // Cash owned by player
+  public int id; // Unique id for identification
+  public String name; // Name of player
+  public int shares; // Amount of shares
+  public GameIf g; // Game interface of user
 
-  /**
-   * Amount of shares owned by the player. Initializes to 0;.
-   */
-
-
-  public int id;
-
-  public String name;
-  public int shares;
-  public GameIf g;
-
-
+/**
+ * Player class using default name
+ */
   public Player(int id, double cash, GameIf game) throws RemoteException {
     this.id = id;
     this.cash = cash;
@@ -34,6 +26,9 @@ public class Player implements PlayerIf, Serializable {
     this.g = game;
   }
 
+  /**
+   * Player class using args name
+   */
   public Player(int id, double cash, GameIf game, String name) throws RemoteException {
     this.name = name;
     this.id = id;
@@ -42,29 +37,28 @@ public class Player implements PlayerIf, Serializable {
     this.g = game;
   }
 
- //@Override
+  /**
+   * Get information from a player
+   *
+   * @param  Stock s Current stock to get details
+   * @return [player name] : [shares] shares - Cash [cash] - Net Worth: $" [Price of the shares] in String form
+   */
   public String toString(Stock s) {
     try{
-      return "Player " + name() + ": " + shares + " shares - Cash: $" + cash + " - Net Worth: $" + getWorth(s);
+      return "Player " + name() + ": " + shares + " Shares - Cash: $" + cash + " - Net Worth: $" + getWorth(s);
     }
     catch (Exception e) {
       System.out.println("");
       return null;
     }
-
   }
 
+/**
+ * Initialise game on existing game
+ * @param GameIf game variable
+ */
   public void setGame(GameIf game) {
     this.g = game;
-  }
-
-  @Override
-  public boolean equals(Object other) {
-    try {
-      return this.id == ((Player) other).getID();
-    } catch (Exception e) {
-      return false;
-    }
   }
 
   /**
@@ -72,33 +66,47 @@ public class Player implements PlayerIf, Serializable {
    * @return Net worth of player.
    */
 
+/**
+ * Get the net worth of the user
+ * @param  Stock s get stocks for it's price
+ * @return a value of stocks in #.## format
+ */
   public double getWorth(Stock s) {
     return Double.valueOf(Watcher.df.format(this.cash + (this.shares * s.price)));
   }
 
+  /**
+   * Get cash of player
+   * @return cash
+   */
   public double getCash() {
     return cash;
   }
 
+  /**
+   * Get shares quantity
+   * @return shares quantity
+   */
   public int getShares() throws RemoteException{
     return shares;
   }
 
+/**
+ * Get ID of player
+ * @return player id
+ */
   public int getID() throws RemoteException {
     return id;
   }
 
+/**
+ * Get name of player
+ * @return name
+ */
   public String name() {
     if (name != null)
       return name;
     return "" + id;
   }
-
-  /**
-   * Allows the player to buy shares. If the player does not have enough cash,
-   * the player can only buy as many as he can afford. If there are not enough
-   * shares for sale, the player receives all the shares available
-   * @param int buy   Number of shares the player wishes to buy
-   */
 
 }

@@ -6,14 +6,14 @@ import java.util.*;
 public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf {
   private static String host = "localhost";
   private static int port = 1099;
+  private static int pID;
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
     Arrays.asList("buy", "sell", "pass", "status", "quit")
   );
-
   private Player me;
   private String name;
 
-  private static int pID;
+
 
   public PlayerClient(String name) throws RemoteException {
     super();
@@ -27,14 +27,25 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
     this.name = name;
   }
 
-  public String getName() {
+/**
+ * Get name of PlayerClient
+ * @return name of PlayerClient
+ */
+  public String getName() throws RemoteException {
     return name;
   }
-
+/**
+ * Get ID of PlayerClient
+ * @return PlayerClient ID
+ */
   public int getID() throws RemoteException {
     return pID;
   }
 
+/**
+ * Call back function for server to print to client
+ * @param String s text to print
+ */
   public void callback(String s) {
     System.out.println(s);
   }
@@ -59,8 +70,9 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
     }
     return false;
   }
+
   /**
-   * Static method to display instructions.
+   * Print instructions when called
    */
   public static void instructions() {
     try {
@@ -74,9 +86,12 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
     //  System.out.println("To pass, use\t\t\t[ pass ]");
       System.out.println("To quit, use\t\t\t[ quit ]");
     }
-
   }
 
+/**
+ * Main function to communicate with server
+ * @param String[] args [description]
+ */
   public static void main(String[] args) {
     String name = "Undefined";
     if (args.length > 0)
@@ -133,33 +148,30 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
       }
 
       // ************* NEW GAME *************
-      //boolean quit = false;
+      // Display instructions
       me = gi.getPlayer(pID);
       instructions();
       System.out.print("Command: ");
-      
+
+      // Get commands from client and test their input for desire outcome
       String out = "";
       while (gi.isOn()) {
         Scanner scanner = new Scanner(System.in);
         out = scanner.nextLine();
-        // get input
         while (!testInput(out)) {
           instructions();
           System.out.print("Command: ");
           out = scanner.nextLine();
         }
+        // Takes in expected outcome and send to server for processing
         gi.action(me, out);
-        
       }
-      //System.out.println("======="+ out);
+      // Quit command prompt if client enter quit
       if(out.equals("quit"))
         {
-
-          System.out.println("======="+ out);
           gs.quitChannel(pc);
           System.exit(0);
         }
-
     } catch(Exception e) {
       e.printStackTrace();
     }
