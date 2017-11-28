@@ -13,8 +13,6 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
   private Player me;
   private String name;
 
-  private static int pID;
-
   public PlayerClient(String name) throws RemoteException {
     super();
     this.name = name;
@@ -29,10 +27,6 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
 
   public String getName() {
     return name;
-  }
-
-  public int getID() throws RemoteException {
-    return pID;
   }
 
   public void callback(String s) {
@@ -96,7 +90,7 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
         gi.setName(stockName);
 
       // Try to join game
-      pID = gi.addPlayer(name, gi);
+      int pID = gi.addPlayer(name, gi);
       while (pID == -1) {
         if (gi.isOn()) { // player limit exceeded.
           System.out.println("Too many players. Please wait for a player to quit.");
@@ -148,7 +142,7 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
         }
 
         gi.action(me, out);
-
+        
       }
 
     } catch(Exception e) {
