@@ -1,7 +1,9 @@
 /* AUTHORSHIP STATEMENT
-Elizabeth Konstantin Kwek Jin Li (2287563K)
-DAS(H) COMPSCI 4019
-This is my own work as defined in the Academic Ethics agreement I have signed.
+* TEAM 13
+* DAS(H) COMPSCI 4019
+* This is our own work as defined in the Academic Ethics agreement we have signed.
+*
+* This Game.java contains all functions that were used to run the game on the server
 */
 
 import java.util.*;
@@ -13,30 +15,43 @@ import java.rmi.server.*;
 import java.net.*;
 
 public class Game implements GameIf, Serializable {
+  // Initiate cash per client
   public static final double STARTCASH = 100.0;
+  // Min and Max players
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
-  private int shares;
-  
-
+  // The duration of the game
+  public static final int RUNTIME = 60000;
+  // The interval of stocks movement
+  public static final int INTERVAL = 10000;
+  // Array to stall all commands for switch-case
   public static final ArrayList<String> COMMANDS = new ArrayList<>(
     Arrays.asList("buy", "sell", "pass", "status", "quit")
   );
 
+  private int shares;
   private Stock stock;
   private Watcher watcher;
-
+  // Players in game
   private ArrayList<Player> players;
+  // Game stats: true if running, false if not running
   private boolean ongoing;
+  // To increment the amount of players in this game
   private int counter = 0;
 
-
+  /**
+   * Class of Game to contain essential details in an ongoing game
+   */
   public Game(String stockName) {
     this.stock = new Stock(stockName);
     this.watcher = new Watcher(stock);
     this.players = new ArrayList<>();
   }
 
+/**
+ *  setName changes the stocks name to first player stocks preference name
+ *
+ */
   public void setName(String stockName) throws RemoteException {
     if (!ongoing) {
       this.stock = new Stock(stockName);
@@ -47,10 +62,15 @@ public class Game implements GameIf, Serializable {
   }
 
   /**
-   * Starts the game if player numbers are between {@code MIN_PLAYERS} and
-   * {@code MAX_PLAYERS}.
-   * @return Whether the game has been successfully started.
+   * Check if the player numbers are not between {@code MIN_PLAYERS} and
+   * {@code MAX_PLAYERS} Set ongoing to false. Else set ongoing to
+   * true, broadcast to clients the start of game and status. Create new thread
+   * to concurrently affect stock price every 10 seconds and broadcast to clients
+   * while the game is ongoing. Stocks price will stop moving when the game ends
+   *
+   * @return ongoing as true to represent successfully running
    */
+
   public boolean start() throws RemoteException {
     if (players.size() < MIN_PLAYERS || players.size() > MAX_PLAYERS) {
       ongoing = false;
@@ -59,16 +79,15 @@ public class Game implements GameIf, Serializable {
       ongoing = true;
       GameServer.broadcast("===================== NEW GAME =====================");
       GameServer.broadcast("Welcome to stocks simulator! Where every 5 second shares will have movement!");
-      // new NewsFlash(this, Watcher.MINOR).run();
       display();
 
       Thread t = new Thread()
       {
-          public void run() 
+          public void run()
           {
             try
             {
-            long duration = System.currentTimeMillis() + 60000;
+            long duration = System.currentTimeMillis() + RUNTIME;
             boolean stat = isOn();
             while(stat)
             {
@@ -77,16 +96,16 @@ public class Game implements GameIf, Serializable {
               {
                 if (System.currentTimeMillis() > duration)
                 {
-                    endGame(); 
-                    System.exit(0);  
+                    endGame();
+                    System.exit(0);
                 }
-                    
-                Thread.sleep(10000);
+
+                Thread.sleep(INTERVAL);
                 affectStock(watcher.type());
                 GameServer.broadcast("===================== SHARE PRICE =====================");
                 GameServer.broadcast(stock.toString());
               }
-            } 
+            }
             System.out.print(" end" + isOn());
           }
           catch (InterruptedException e) {
@@ -94,8 +113,8 @@ public class Game implements GameIf, Serializable {
                 e.printStackTrace();
             }
            catch(Exception e){
-              System.out.println("interrupted");      // Always must return something
-            } 
+              System.out.println("interrupted");
+            }
           }
       };
       t.start();
@@ -112,29 +131,29 @@ public class Game implements GameIf, Serializable {
 
   /**
    * Adds a player to the game if there is space available. Returns -1 if game
-   * is full.
-   * @return Player ID. -1 if not added.
+   * is full. Add player into players array, initialise new player class and
+   * broadcast to all clients.
+   * @return counter
    */
   public int addPlayer() throws RemoteException {
     int cursize = players.size();
     if (cursize == MAX_PLAYERS) {
-      // GameServer.broadcast("Too many players. Please wait for a player to quit.");
       return -1;
     }
     players.add(new Player(++counter, STARTCASH, this));
     GameServer.broadcast("Player " + counter + " has joined the game.");
     return counter;
   }
+
   /**
    * Adds a player to the game if there is space available. Returns -1 if game
    * is full.
-   * @param String name Player name to use
+   * @param String name Player name to use and GameIf game interface
    * @return Player ID. -1 if not added.
    */
   public int addPlayer(String name, GameIf game) throws RemoteException {
     int cursize = players.size();
     if (cursize == MAX_PLAYERS) {
-      // GameServer.broadcast("Too many players. Please wait for a player to quit.", name);
       return -1;
     }
     players.add(new Player(++counter, STARTCASH, game, name));
@@ -170,6 +189,10 @@ public class Game implements GameIf, Serializable {
     GameServer.broadcast(getInfo());
   }
 
+  /**
+  * Get every player stock information and detail
+  * @return stock detail of players
+  */
   public String getInfo() throws RemoteException {
     String out = "\n" + stock;
     for (Player p : players)
@@ -224,6 +247,11 @@ public class Game implements GameIf, Serializable {
     ongoing = false;
   }
 
+/**
+ * Get commands entered by client
+ * @param  Player p    To know which player is sending commands
+ * @param  String out  Values entered by client after validation
+ */
   public void action(Player p, String out) throws RemoteException
   {
 
@@ -248,15 +276,13 @@ public class Game implements GameIf, Serializable {
         break;
       }
   }
- /**
-   * Get input from the player.
-   * @return whether the player quit.
-   */
- 
- /**
-   * Allows the player to sell their shares. If the player does not have enough
-   * shares to sell, all remaining shares will be sold.
-   * @param int sell   Number of shåares the player wishes to sell
+
+  /**
+   * Synchronised function that lock shares quantity of a stock
+   * Allows the player to sell their shares. If the player entered a value that
+   * is larger than what he is holding, all remaining shares will be sold
+   * @param  int    sell  Number of shares the player wishes to sell
+   * @param  Player p     Which player entered this command
    */
   public synchronized void sell(int sell, Player p) throws RemoteException
   {
@@ -274,7 +300,10 @@ public class Game implements GameIf, Serializable {
     setPlayer(p);
     GameServer.broadcast(p.name + " " + sold + " shares sold.");
   }
-
+/**
+ * To iterate the array to the entered player
+ * @param  Player p Desired player
+ */
   private void setPlayer(Player p) throws RemoteException {
     for (int i=0; i<players.size(); i++) {
       if (players.get(i).getID() == p.getID()) {
@@ -284,6 +313,14 @@ public class Game implements GameIf, Serializable {
     }
   }
 
+/**
+ * Synchronised function that lock shares quantity of a stock
+ * Allows the player to buy shares. If the player entered a value that
+ * is larger than how much is can afford, he will purchase the max amount of
+ * shares he can afford
+ * @param  int buy quantity of shares to purchase
+ * @param  Player p targeted player to change detail
+ */
   public synchronized void buy(int buy, Player p) throws RemoteException
   {
     int bought = 0;
@@ -302,23 +339,10 @@ public class Game implements GameIf, Serializable {
   }
 
   /**
-   * Allows the player to leave the game, returning all shares back to the stock.
+   * Return holding shares of client that quit back to the share
    */
   public void quit() throws RemoteException
   {
     stock.returned(shares);
-   /*     try {
-      GameServer.broadcast(
-        "Player " + name() + " has left the game. " +
-        shares + " shares have been returned to the stock."
-      );
-    } catch (Exception e) {
-      System.out.println(
-        "Player " + name() + " has left the game. " +
-        shares + " shares have been returned to the stock."
-      );
-    }*/
   }
-
-
 }
