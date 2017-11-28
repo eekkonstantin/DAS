@@ -206,7 +206,7 @@ public class Game implements GameIf, Serializable {
   public void endGame() throws RemoteException {
     String out = "\n************* GAME ENDED *************";
     if (players.size() == 1)
-      out += "\nWINNER WINNER CHICKEN DINNER! " + players.get(0).name();
+      out += "\nWINNER WINNER CHICKEN DINNER! " + players.get(0).toString(stock);
     else {
       double topScore = 0;
       for (Player p : players) {
@@ -215,7 +215,7 @@ public class Game implements GameIf, Serializable {
       }
 
       for (Player p : players) {
-        out += "\n" + (p.getWorth(stock) == topScore ? "WINNER! " : "") + p.name();
+        out += "\n" + (p.getWorth(stock) == topScore ? "WINNER! " : "") + p.toString(stock);
         System.out.println(p.getWorth(stock) + "================");
       }
     }
@@ -297,7 +297,7 @@ public class Game implements GameIf, Serializable {
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
     setPlayer(p);
-    GameServer.broadcast(p.name + " bought " + bought + " shares at " + stock.getPrice());
+    GameServer.broadcast(p.name + " bought " + bought + " shares at $" + stock.getPrice());
   }
 
   /**
