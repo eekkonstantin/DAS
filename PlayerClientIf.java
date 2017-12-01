@@ -16,6 +16,7 @@ public interface PlayerClientIf extends Remote {
   /**
    * Call back function for server to print to client
    * @param String s text to print
+   * @param boolean quit whether to quit after broadcast
    */
-  public void callback(String s) throws RemoteException;
+  public void callback(String s, boolean quit) throws RemoteException;
 }

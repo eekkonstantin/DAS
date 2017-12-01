@@ -46,8 +46,10 @@ public class PlayerClient extends UnicastRemoteObject implements PlayerClientIf 
  * Call back function for server to print to client
  * @param String s text to print
  */
-  public void callback(String s) {
+  public void callback(String s, boolean quit) {
     System.out.println(s);
+    // if (quit)
+    //   System.exit(0);
   }
 
 /**

@@ -21,7 +21,7 @@ public class Game implements GameIf, Serializable {
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
   // The duration of the game
-  public static final int RUNTIME = 60000;
+  public static final int RUNTIME = 5000;
   // The interval of stocks movement
   public static final int INTERVAL = 10000;
   // Array to stall all commands for switch-case
@@ -103,7 +103,7 @@ public class Game implements GameIf, Serializable {
                 Thread.sleep(INTERVAL);
                 affectStock(watcher.type());
                 GameServer.broadcast("===================== SHARE PRICE =====================");
-                GameServer.broadcast(stock.toString());
+                GameServer.broadcast(stock.toString() + "\n");
               }
             }
             System.out.print(" end" + isOn());
@@ -113,7 +113,13 @@ public class Game implements GameIf, Serializable {
                 e.printStackTrace();
             }
            catch(Exception e){
-              System.out.println("interrupted");
+              System.out.println("interrupted, ending game");
+              try {
+                endGame();
+              } catch (Exception ex) {
+                System.err.println("Error ending game");
+                e.printStackTrace();
+              }
             }
           }
       };
@@ -243,7 +249,7 @@ public class Game implements GameIf, Serializable {
         System.out.println(p.getWorth(stock) + "================");
       }
     }
-    GameServer.broadcast(out);
+    GameServer.broadcastEnd(out);
     ongoing = false;
   }
 
@@ -298,7 +304,7 @@ public class Game implements GameIf, Serializable {
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
     setPlayer(p);
-    GameServer.broadcast(p.name + " " + sold + " shares sold.");
+    GameServer.broadcast(p.name + " sold " + sold + " shares.");
   }
 /**
  * To iterate the array to the entered player

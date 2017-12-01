@@ -51,7 +51,17 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
   public static void broadcast(String s) throws RemoteException {
     System.out.println(s);
     for (PlayerClientIf member: GameServer.members) {
-      member.callback(s);
+      member.callback(s, false);
+    }
+  }
+/**
+ * To call the callback method in all clients interface
+ * @param  String s String to be printed out to all clients
+ */
+  public static void broadcastEnd(String s) throws RemoteException {
+    System.out.println(s);
+    for (PlayerClientIf member: GameServer.members) {
+      member.callback(s, true);
     }
   }
 
@@ -63,7 +73,7 @@ public class GameServer extends UnicastRemoteObject implements GameServerIf {
   public static void message(String s, int pID) throws RemoteException {
     for (PlayerClientIf member : GameServer.members) {
       if (member.getID() == pID) {
-        member.callback(s);
+        member.callback(s, false);
         break;
       }
     }
