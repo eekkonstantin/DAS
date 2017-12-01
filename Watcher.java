@@ -77,10 +77,10 @@ public class Watcher implements Serializable {
         String key = array.get(rkey);
 
         try {
-          GameServer.broadcast("===================== BREAKING NEWS!===================== ");
+          GameServer.broadcast("\n===================== BREAKING NEWS!===================== ");
           GameServer.broadcast(key);
         } catch(Exception e) {
-          System.out.println("===================== BREAKING NEWS!===================== ");
+          System.out.println("\n===================== BREAKING NEWS!===================== ");
           System.out.println(key);
         }
         inc = (good ? goodEvt.get(key) : badEvt.get(key)) * stock.price;
