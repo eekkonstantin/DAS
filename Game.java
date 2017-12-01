@@ -21,7 +21,7 @@ public class Game implements GameIf, Serializable {
   public static final int MIN_PLAYERS = 2;
   public static final int MAX_PLAYERS = 3;
   // The duration of the game
-  public static final int RUNTIME = 5000;
+  public static final int RUNTIME = 300000;
   // The interval of stocks movement
   public static final int INTERVAL = 10000;
   // Array to stall all commands for switch-case
@@ -290,8 +290,11 @@ public class Game implements GameIf, Serializable {
    * @param  int    sell  Number of shares the player wishes to sell
    * @param  Player p     Which player entered this command
    */
-  public synchronized void sell(int sell, Player p) throws RemoteException
+  public synchronized void sell(int sell, Player player) throws RemoteException
   {
+    Player p = findPlayer(player);
+
+    System.err.println(p.name() + " trying to sell " + sell);
     int sold = 0;
     while (sell > 0) {
       if (p.shares == 0)
@@ -301,10 +304,19 @@ public class Game implements GameIf, Serializable {
       p.cash += stock.getPrice();
       stock.returned();
       sold++;
+      System.err.println(p.name() + " trying to sell " + sell);
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
-    setPlayer(p);
-    GameServer.broadcast(p.name + " sold " + sold + " shares.");
+    // setPlayer(p);
+    GameServer.broadcast(p.name() + " sold " + sold + " shares.");
+  }
+
+  private Player findPlayer(Player player) throws RemoteException {
+    for (Player p : players)
+      if (p.getID() == player.getID())
+        return p;
+
+    return null;
   }
 /**
  * To iterate the array to the entered player
@@ -327,8 +339,10 @@ public class Game implements GameIf, Serializable {
  * @param  int buy quantity of shares to purchase
  * @param  Player p targeted player to change detail
  */
-  public synchronized void buy(int buy, Player p) throws RemoteException
+  public synchronized void buy(int buy, Player player) throws RemoteException
   {
+    Player p = findPlayer(player);
+
     int bought = 0;
     while (buy > 0) {
       if (p.cash < stock.getPrice() || stock.getPrice() <= 0)
@@ -340,8 +354,8 @@ public class Game implements GameIf, Serializable {
       buy--;
     }
     p.cash = Double.valueOf(Watcher.df.format(p.cash));
-    setPlayer(p);
-    GameServer.broadcast(p.name + " bought " + bought + " shares at $" + stock.getPrice());
+    // setPlayer(p);
+    GameServer.broadcast(p.name() + " bought " + bought + " shares at $" + stock.getPrice());
   }
 
   /**
